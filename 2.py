@@ -15,7 +15,6 @@ def second_checksum(list):
 
 
 if __name__ == "__main__":
-    data = []
     with open("2") as dfile:
         data = dfile.readlines()
         data = [a.split() for a in data]

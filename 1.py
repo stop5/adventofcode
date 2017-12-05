@@ -11,9 +11,7 @@ def sumoffset(text, offset=1):
 
 
 if __name__ == "__main__":
-    sum = 0
-    data = ""
-    with open("1") as input:
-        data = input.read()
+    with open("1") as dfile:
+        data = dfile.read()
     print("First solution: ", sumoffset(data))
     print("Second Solution: ", sumoffset(data, int(len(data) / 2)))

@@ -12,10 +12,10 @@ def count_valid(data, anagrams=True):
     else:
         sort = sorted
     for line in data:
-        wörter = []
-        for wort in line.split():
-            if sort(wort) not in wörter:
-                wörter.append(sort(wort))
+        words = []
+        for word in line.split():
+            if sort(word) not in words:
+                words.append(sort(word))
             else:
                 break
         else:
@@ -26,5 +26,5 @@ def count_valid(data, anagrams=True):
 if __name__ == "__main__":
     with open("4") as dfile:
         data = dfile.readlines()
-    print("Lösung 1:", count_valid(data))
-    print("Lösung 2:", count_valid(data, False))
+    print("Solution 1:", count_valid(data))
+    print("Solution 2:", count_valid(data, False))

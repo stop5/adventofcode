@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+
+
 def traverse(data, jumpcomputer):
     line = 0
     jumps = 0
