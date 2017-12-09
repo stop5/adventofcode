@@ -1,66 +1,63 @@
 #!/usr/bin/python3
 import re
 from pprint import pprint
-import copy
 
-def deeplevel(subtree, i=0):
-    level = 0
-    maximum = [0, {}]
-    if len(subtree) > 0:
-        level += 1
-        for node in subtree:
-            if subtree[node] is None:
-                pass
-            elif type(subtree[node][1]) == list:
-                level += 1
-            else:
-                temp = deeplevel(subtree[node][1], i+1)
-                if temp > maximum[0]:
-                    maximum = [temp, subtree[node][1]]
-    return level + maximum[0] + i
+lineformat = re.compile("(\w+) \((\d+)\)(?: -> ([\w, ]+))?")
 
-def multiply(tree, multi, leafnodes):
-    leaf = []
-    for item in tree:
-        if tree[item] is None:
-            l = [item, [*multi, leafnodes[item]]]
-            l.append(sum(l[1]))
-            leaf.append(l)
-        elif type(tree[item][1]) == dict:
-            leaf.extend(multiply(tree[item][1], [*multi, tree[item][0]], leafnodes))
-        else:
-            for sitem in tree[item][1]:
-                l = [sitem, [*multi,tree[item][0], leafnodes[sitem]]]
-                l.append(sum(l[1]))
-                leaf.append(l)
-    return leaf
+class WeightItem:
+    def __init__(self, name, data):
+        for match in data:
+            if match[1] == name:
+                break
+        self.name = match[1]
+        self.weight = self.subweight = int(match[2])
+        self.data = []
+        if match[3]:
+            for item in match[3].split(", "):
+                item = WeightItem(item, data)
+                self.data.append(item)
+                self.subweight += item.subweight
 
-with open("7") as open_file:
-    data = open_file.read().splitlines()
-    test = re.compile("(\w+) \((\d+)\)(?: -> ([\w, ]+))?")
-    topnodes = {}
-    subnodes = {}
-    for node in data:
-        match = test.match(node).groups()
-        if not (match[2] is None):
-            combo = {match[0]: [int(match[1]), match[2]]}
-            topnodes.update(combo)
-        else:
-            subnodes.update({match[0]: int(match[1])})
-    for node in copy.deepcopy(topnodes):
-        topnodes[node][1] = topnodes[node][1].split(", ")
-        nsub = {}
-        for counter in range(len(topnodes[node][1])):
-            if topnodes[node][1][counter] in topnodes:
-                nsub.update({topnodes[node][1][counter]: topnodes[topnodes[node][1][counter]]})
-            else:
-                nsub.update({topnodes[node][1][counter]: None})
-        topnodes[node][1] = nsub
-    deepest = {}
-    for node in topnodes:
-        deeplevelold = deeplevel(deepest)
-        deeplevelnew = deeplevel({node: topnodes[node]})
-        if deeplevelold < deeplevelnew:
-            deepest = {node: topnodes[node]}
-    print(list(deepest.keys())[0])
-    pprint(multiply(deepest, [], subnodes))
+    def balance_weight(self):
+        if len(data) == 0:
+            return False
+        sw = {}
+        weight = {}
+        for item in self.data:
+            balance =  item.balance_weight()
+            if balance:
+                return balance
+            if item.subweight not in sw:
+                sw.update({item.subweight: [0, item]})
+            sw[item.subweight][0] += 1
+        if len(sw) > 1:
+            normal = max(sw.values(), key=lambda x:x[0])[1]
+            outlier = min(sw.values(), key=lambda x:x[0])[1]
+            return normal.subweight - outlier.subweight + outlier.weight
+        return False
+
+    def tree(self):
+        return {self: [item.tree() for item in self.data]}
+
+    def __repr__(self):
+        return "<{} {} {}>".format(self.name, self.weight, self.subweight)
+
+def get_top(data):
+    bottoms = []
+    for item in data:
+        if item[3]:
+            for b in item[3].split(", "):
+                if b not in bottoms:
+                    bottoms.append(b)
+    for item in data:
+        if item[1] not in bottoms:
+            return item
+
+if __name__ == "__main__":
+    with open("7") as dfile:
+        data = dfile.readlines()
+        data = [lineformat.match(line) for line in data]
+    top = get_top(data)
+    top = WeightItem(top[1], data)
+    print("Solution 1: ", top.name)
+    print("Solution 2: ", top.balance_weight())
